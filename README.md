@@ -7,11 +7,12 @@ This project implements an intelligent self-healing cloud system using Microsoft
 ## TECH STAK:
 
 	•	Microsoft Azure
-	•	Terraform (Infrastructure as Code)
+	•	Terraform (Infrastructure as Code) (Remote backend was used for state management but configuration is excluded for security reasons)
 	•	Azure Monitor & Alerts
 	•	Azure Automation (Runbook)
 	•	PowerShell
 	•	HTML (Monitoring Website)
+	
 ## ARCHITECTURE:
 
 	•	Virtual Machine hosts the website (IIS)
