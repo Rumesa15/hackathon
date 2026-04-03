@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AutoHeal AI Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f7fb;
+}
+
+/* NAVBAR */
+.navbar {
+    background: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* KPI */
+.kpi {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 15px;
+    padding: 20px;
+}
+
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+/* GRID */
+.grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+.chart-box, .control-box, .logs-box {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+/* BUTTON */
+button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.crash { background: red; color: white; }
+.heal { background: green; color: white; }
+
+/* LOG */
+.log {
+    height: 200px;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+/* ALERT */
+#alertBox {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* CHAT */
+.chat {
+    margin-top: 20px;
+}
+
+.chatlogs {
+    height: 120px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 5px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+<b>🤖 AutoHeal Dashboard</b>
+<div>
+<input id="search" placeholder="Search logs">
+<select>
+<option>Auto</option>
+<option>Manual</option>
+</select>
+</div>
+</div>
+
+<!-- KPI -->
+<div class="kpi">
+<div class="card">Status: <b id="status">Running</b></div>
+<div class="card">Failures: <b id="fail">0</b></div>
+<div class="card">Uptime: <b id="up">100%</b></div>
+<div class="card">Health: <b id="health">95%</b></div>
+</div>
+
+<div class="grid">
+
+<!-- CHART -->
+<div class="chart-box">
+<h3>Performance</h3>
+<canvas id="chart"></canvas>
+</div>
+
+<!-- CONTROL -->
+<div class="control-box">
+<h3>Status Control</h3>
+<button class="crash" onclick="crash()">Crash</button>
+<button class="heal" onclick="heal()">Heal</button>
+
+<div id="alertBox">✅ System Stable</div>
+
+<div class="chat">
+<h3>AutoHeal Bot</h3>
+<div id="chatlogs" class="chatlogs"></div>
+<input id="msg" placeholder="Ask..." onkeypress="if(event.key==='Enter') send()">
+</div>
+</div>
+
+<!-- LOGS -->
+<div class="logs-box">
+<h3>Logs</h3>
+<div id="logs" class="log"></div>
+</div>
+
+</div>
+
+<script>
+let f=0,u=100,h=95;
+
+/* CHART */
+const chart=new Chart(document.getElementById("chart"),{
+type:'line',
+data:{labels:[],datasets:[{data:[]}]}
+});
+
+setInterval(()=>{
+chart.data.labels.push('');
+chart.data.datasets[0].data.push(Math.random()*100);
+chart.update();
+},2000);
+
+/* LOG */
+function log(msg,type="info"){
+let time=new Date().toLocaleTimeString();
+
+let div=document.createElement("div");
+
+let color = type==="critical" ? "red" :
+            type==="warning" ? "orange" : "black";
+
+div.style.color=color;
+
+div.innerText=`[${time}] (${type}) ${msg}`;
+
+document.getElementById("logs").prepend(div);
+}
+
+/* SEARCH */
+document.getElementById("search").addEventListener("input",function(){
+let val=this.value.toLowerCase();
+document.querySelectorAll("#logs div").forEach(e=>{
+e.style.display=e.innerText.toLowerCase().includes(val)?"":"none";
+});
+});
+
+/* CRASH */
+function crash(){
+f++; u-=5; h-=5;
+
+document.getElementById("fail").innerText=f;
+document.getElementById("up").innerText=u+"%";
+document.getElementById("health").innerText=h+"%";
+document.getElementById("status").innerText="Down";
+
+log("Critical failure detected","critical");
+
+document.getElementById("alertBox").innerText="🚨 SYSTEM DOWN";
+
+setTimeout(()=>{
+log("Auto recovery started","warning");
+document.getElementById("alertBox").innerText="🔄 Recovering...";
+},2000);
+
+setTimeout(heal,4000);
+}
+
+/* HEAL */
+function heal(){
+document.getElementById("status").innerText="Running";
+document.getElementById("alertBox").innerText="✅ System Stable";
+log("System recovered successfully","info");
+}
+
+/* CHAT */
+function send(){
+let input=document.getElementById("msg");
+let msg=input.value.toLowerCase();
+input.value="";
+let logs=document.getElementById("chatlogs");
+
+logs.innerHTML+="<div>👤 "+msg+"</div>";
+
+let r="Try: status, failures, uptime, health";
+
+if(msg.includes("status")) r="System is "+document.getElementById("status").innerText;
+else if(msg.includes("fail")) r="Failures: "+f;
+else if(msg.includes("uptime")) r="Uptime: "+u+"%";
+else if(msg.includes("health")) r="Health: "+h+"%";
+
+logs.innerHTML+="<div>🤖 "+r+"</div>";
+logs.scrollTop=logs.scrollHeight;
+}
+</script>
+
+</body>
+</html>
